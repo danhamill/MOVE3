@@ -33,7 +33,6 @@ def comp_extended_record(short_years, short_record, long_years, long_record):
     """
     
     long_record = np.log10(long_record)
-    
     short_record = np.log10(short_record)
     
     suppress_params = False
@@ -57,21 +56,16 @@ def comp_extended_record(short_years, short_record, long_years, long_record):
     additional_record = np.array(long_record)[ind3]
     
     n1 = len(con_short_record)
-    
     n2 = len(additional_record)
     
     
     
     ybar1 = np.mean(con_short_record)
-    
     xbar1 = np.mean(con_long_record)
-    
     xbar2 = np.mean(additional_record)
     
     s_sq_y1 = comp_variance(con_short_record)
-    
     s_sq_x1 = comp_variance(con_long_record)
-    
     s_sq_x2 = comp_variance(additional_record)
     
     
