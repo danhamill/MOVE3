@@ -22,28 +22,28 @@ import numpy as np
 
 class MOVE3(object):
 
-    def __init__(self):
+    def __init__(self, merge_data):
 
         self.merge_data = merge_data
 
         #MOVE3 Constant Parameters
-        self.long_record = list(self.merge_data.loc[self.merge_data.Record_Type == 'Long Record', 'FLOW'])
+        self.long_record = np.log10(list(self.merge_data.loc[self.merge_data.Record_Type == 'Long Record', 'FLOW']))
         self.long_years = list(self.merge_data.loc[self.merge_data.Record_Type == 'Long Record', 'WY'].dt.year)
-        self.short_record =list(self.merge_data.loc[self.merge_data.Record_Type == 'Short Record', 'FLOW'])
+        self.short_record =np.log10(list(self.merge_data.loc[self.merge_data.Record_Type == 'Short Record', 'FLOW']))
         self.short_years = list(self.merge_data.loc[self.merge_data.Record_Type == 'Short Record', 'WY'].dt.year)
         self.concurrent_years = list(set(self.short_years) & set(self.long_years))
 
         self._ind1 = [self.long_years.index(year) for year in self.concurrent_years if year in self.long_years]
         self._ind2 = [self.short_years.index(year) for year in self.concurrent_years if year in self.short_years]
 
-        self.con_long_record = np.array(self.long_record)[self.ind1]
-        self.con_short_record = np.array(self.short_record)[self.ind2]
-        self.additional_years = list(set(long_years)-set(short_years))
+        self.con_long_record = np.array(self.long_record)[self._ind1]
+        self.con_short_record = np.array(self.short_record)[self._ind2]
+        self.additional_years = list(set(self.long_years)-set(self.short_years))
         self._ind3 =  [self.long_years.index(year) for year in self.additional_years if year in self.long_years]
-        self.additonal_record = np.array(self.long_record)[self.ind3]
+        self.additional_record  = np.array(self.long_record)[self._ind3]
 
         self.n1 = len(self.con_short_record)
-        self.n2 = len(self.additional_record)
+        self.n2 = len(self.additional_record )
 
         self.ybar1 = np.mean(self.con_short_record)
         self.xbar1 = np.mean(self.con_long_record)
@@ -117,7 +117,7 @@ class MOVE3(object):
         self.beta_hat = self._bhat_top/self._bhat_bottom 
         self.p_hat = self.beta_hat * (np.sqrt(self.s_sq_x1)/np.sqrt(self.s_sq_y1))
         self.mu_hat_y = self.ybar1 + self.n2/(self.n1+self.n2)*self.beta_hat*(self.xbar2-self.xbar1)
-        self.sigma_hat_y_sq = (1/(self.n1+self.n2-1))*((self.n1-1)*self.s_sq_y1 + (self.n2-1)*self.beta_hat**2*self.s_sq_x2 + self.n2-1)*self.alpha_sq*(1-self.p_hat**2)*self.s_sq_y1+(self.n1*self.n2)/(self.n1+self.n2)*self.beta_hat**2*(self.xbar2-self.xbar1)**2)
+        self.sigma_hat_y_sq = (1/(self.n1+self.n2-1))*((self.n1-1)*self.s_sq_y1 + (self.n2-1)*self.beta_hat**2*self.s_sq_x2 + (self.n2-1)*self.alpha_sq*(1-self.p_hat**2)*self.s_sq_y1+(self.n1*self.n2)/(self.n1+self.n2)*self.beta_hat**2*(self.xbar2-self.xbar1)**2)
 
         self.A1 = (self.n2+2)*(self.n1-6)*(self.n1-8)/(self.n1-5)
         self.A2 = self.n1-4
@@ -149,8 +149,8 @@ class MOVE3(object):
         
         self.ne_int = int(round(self.ne))
         
-        self.extension_record = self.additional_record[-self.ne_int:]
-        self.extension_years = self.additional_years[-self.ne_int:]
+        self.extension_record = self.additional_record[-(self.ne_int):]
+        self.extension_years = self.additional_years[-(self.ne_int):]
         
         self.xe_bar = np.mean(self.extension_record)
         self.s_sq_xe = self.comp_variance(self.extension_record)
@@ -159,8 +159,8 @@ class MOVE3(object):
         
         self.b_sq1 = (self.n1 + self.ne_int-1)*self.sigma_hat_y_sq 
         self.b_sq2 = (self.n1-1)*self.s_sq_y1
-        self.b_sq3 = self.n1*(self.ybar1-mu_hat_y)**2
-        self.b_sq4 = self.ne_int*(self.a-mu_hat_y)**2
+        self.b_sq3 = self.n1*(self.ybar1-self.mu_hat_y)**2
+        self.b_sq4 = self.ne_int*(self.a-self.mu_hat_y)**2
         self.b_sq5 = (self.ne_int-1)*self.s_sq_xe
         
         self.b_sq = (self.b_sq1 - self.b_sq2 - self.b_sq3 - self.b_sq4)/self.b_sq5
@@ -172,29 +172,3 @@ class MOVE3(object):
         self.extended_short_record = self.extension_short_record + self.short_record_flows 
         self.extended_short_years = self.extension_years + self.short_years
         
-
-
-def main():
-
-    import csv
-    with open('Suwanee.csv', 'r') as f:
-        reader = csv.reader(f)
-        y = list(reader)
-        
-        short_years = [int(y1[0]) for y1 in y]
-        short_record = [int(y1[1]) for y1 in y]
-    
-    with open('Etowah.csv', 'r') as f:
-        reader = csv.reader(f)
-        x = list(reader)
-        
-        long_years = [int(x1[0]) for x1 in x]
-        long_record = [int(x1[1]) for x1 in x]
-    
-    
-    out = comp_extended_record(short_years, short_record, long_years, long_record)
-
-    print(out)
-    
-if __name__ == "__main__":
-    main()
