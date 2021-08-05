@@ -46,7 +46,7 @@ c = alt.Chart(merge).mark_circle().encode(
     x = alt.X('WY:T', axis = alt.Axis(format = '%Y')),
     y = alt.Y('FLOW'),
     color = alt.Color('Record_Type'), 
-    tooltip = ['WY','FLOW','Record_Type']
+    tooltip = [alt.Tooltip('WY:T', format='%Y') ,'FLOW','Record_Type']
 )
 
 st.altair_chart(c,use_container_width=True)
@@ -83,7 +83,7 @@ con_df_log = pd.DataFrame(data = {'WY': res.concurrent_years,
 con_chart = alt.Chart(con_df.reset_index()).mark_circle().encode(
         x = alt.X('Long Record', axis = alt.Axis(title = 'Annual Peak Flow, Long Record'), scale = alt.Scale(type='log')),
         y = alt.Y('Short Record', axis = alt.Axis(title = 'Annual Peak Flow, Short Record'), scale = alt.Scale(type='log')),
-        tooltip = ['WY']
+        tooltip = [alt.Tooltip('WY:T', format='%Y')]
     )
 
 
@@ -103,7 +103,7 @@ st.latex(rf"R^{2} = {r_sqd}")
 
 st.altair_chart(con_chart, use_container_width=True)
 
-if st.checkbox("Show Move 3 Statistics"):
+if st.checkbox("Show MOVE.3 Statistics"):
 
     stat_df = pd.DataFrame.from_dict(stats, orient='index', columns = ['Parameter'])
     st.write(stat_df)
@@ -116,12 +116,14 @@ extend_chart = alt.Chart(extend_df).mark_circle().encode(
     x = alt.X('WY:T', axis = alt.Axis(format = '%Y')),
     y = alt.Y('FLOW'),
     color = alt.Color('Record_Type'), 
-    tooltip = ['WY','FLOW','Record_Type']
+    tooltip = [alt.Tooltip('WY:T', format='%Y') ,'FLOW','Record_Type']
 )
 
 merge_chart= alt.layer(c, extend_chart)
 st.altair_chart(merge_chart, use_container_width=True)
 
+if st.checkbox("Show Extended Dataset"):
+    st.write(extend_df)
 # c1 = alt.Chart()
 
 
