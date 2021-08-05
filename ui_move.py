@@ -91,12 +91,10 @@ linear_model = LinearRegression().fit(con_df_log[['Long Record']], con_df_log[['
 
 con_slope = float(np.round(linear_model.coef_,4))
 con_int = float(np.round(10**linear_model.intercept_,4))
-print(con_int)
 y_pred = linear_model.predict(con_df_log[['Long Record']])
 r_sqd = np.round(r2_score( con_df_log[['Short Record']], y_pred),3)
 
 eqn = f"y ={con_int}x^{con_slope} "
-print(eqn)
 st.write(eqn)
 st.latex(rf"R^{2} = {r_sqd}")
 
@@ -124,22 +122,3 @@ st.altair_chart(merge_chart, use_container_width=True)
 
 if st.checkbox("Show Extended Dataset"):
     st.write(extend_df)
-# c1 = alt.Chart()
-
-
-
-
-# extended_record = pd.DataFrame(data = {'WY':out[1], 'FLOW':out[0]})
-
-# st.write(extended_record)
-
-# st.subheader('Number of pickups by hour')
-# hist_values = np.histogram(data[DATE_COLUMN].dt.hour, bins=24, range=(0,24))[0]
-# st.bar_chart(hist_values)
-
-# # Some number in the range 0-23
-# hour_to_filter = st.slider('hour', 0, 23, 17)
-# filtered_data = data[data[DATE_COLUMN].dt.hour == hour_to_filter]
-
-# st.subheader('Map of all pickups at %s:00' % hour_to_filter)
-# st.map(filtered_data)
