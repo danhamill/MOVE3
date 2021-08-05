@@ -2,8 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
-from core.MOVE import comp_extended_record
-
+from core.move3 import MOVE3
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
 
 st.title('MOVE.3 Record Extension')
 
@@ -19,13 +20,10 @@ def merge_flow_data(short_data, long_data):
     merge.loc[:,'WY'] = pd.to_datetime(merge.WY, format = '%Y')
     return merge
 
-
-
 @st.cache(allow_output_mutation=True)
 def load_data(fpath):
     data = pd.read_csv(fpath, header=None, names = ['WY','FLOW'])
     return data
-
 
 
 data_load_state = st.text('Loading data...')
@@ -53,17 +51,85 @@ c = alt.Chart(merge).mark_circle().encode(
 
 st.altair_chart(c,use_container_width=True)
 
+res = MOVE3(merge)
+res.calculate()
 
-short_years = list(short_data.WY)
-short_record = list(short_data.FLOW)
-long_years = list(long_data.WY)
-long_record = list(long_data.FLOW)
+stats = {'y_bar1': res.ybar1,
+         'x_bar1' : res.xbar1,
+         'x_bar2': res.xbar2,
+         'var_y1': res.s_sq_y1,
+         'var_x1': res.s_sq_x1,
+         'var_x2': res.s_sq_x2,
+         'mu_hat_y': res.mu_hat_y,
+         'beta_hat': res.beta_hat,
+         'alpha_sq': res.alpha_sq,
+         'n1':res.n1,
+         'n2':res.n2,
+         'A': res.A,
+         'B': res.B,
+         'C': res.C,
+         'ne': res.ne_int,
+         'p_hat': res.p_hat}
 
-out = comp_extended_record(short_years, short_record, long_years, long_record)
 
-extended_record = pd.DataFrame(data = {'WY':out[1], 'FLOW':out[0]})
+con_df = pd.DataFrame(data = {'WY': res.concurrent_years, 
+                                        'Short Record': 10**res.con_short_record,
+                                        'Long Record':  10**res.con_long_record}).set_index('WY')
 
-st.write(extended_record)
+con_df_log = pd.DataFrame(data = {'WY': res.concurrent_years, 
+                                        'Short Record': res.con_short_record,
+                                        'Long Record':  res.con_long_record}).set_index('WY')
+
+con_chart = alt.Chart(con_df.reset_index()).mark_circle().encode(
+        x = alt.X('Long Record', axis = alt.Axis(title = 'Annual Peak Flow, Long Record'), scale = alt.Scale(type='log')),
+        y = alt.Y('Short Record', axis = alt.Axis(title = 'Annual Peak Flow, Short Record'), scale = alt.Scale(type='log')),
+        tooltip = ['WY']
+    )
+
+
+linear_model = LinearRegression().fit(con_df_log[['Long Record']], con_df_log[['Short Record']])
+
+con_slope = float(np.round(linear_model.coef_,4))
+con_int = float(np.round(10**linear_model.intercept_,4))
+print(con_int)
+y_pred = linear_model.predict(con_df_log[['Long Record']])
+r_sqd = np.round(r2_score( con_df_log[['Short Record']], y_pred),3)
+
+eqn = f"y ={con_int}x^{con_slope} "
+print(eqn)
+st.write(eqn)
+st.latex(rf"R^{2} = {r_sqd}")
+
+
+st.altair_chart(con_chart, use_container_width=True)
+
+if st.checkbox("Show Move 3 Statistics"):
+
+    stat_df = pd.DataFrame.from_dict(stats, orient='index', columns = ['Parameter'])
+    st.write(stat_df)
+
+
+extend_df = pd.DataFrame(data = {'WY': pd.to_datetime(res.extended_short_years, format = '%Y'),
+                                    'FLOW': res.extended_short_record,
+                                    'Record_Type':'Extended Sort Record'})
+extend_chart = alt.Chart(extend_df).mark_circle().encode(
+    x = alt.X('WY:T', axis = alt.Axis(format = '%Y')),
+    y = alt.Y('FLOW'),
+    color = alt.Color('Record_Type'), 
+    tooltip = ['WY','FLOW','Record_Type']
+)
+
+merge_chart= alt.layer(c, extend_chart)
+st.altair_chart(merge_chart, use_container_width=True)
+
+# c1 = alt.Chart()
+
+
+
+
+# extended_record = pd.DataFrame(data = {'WY':out[1], 'FLOW':out[0]})
+
+# st.write(extended_record)
 
 # st.subheader('Number of pickups by hour')
 # hist_values = np.histogram(data[DATE_COLUMN].dt.hour, bins=24, range=(0,24))[0]
