@@ -79,21 +79,47 @@ class MOVE3(object):
         self.C6 = None
         self.C7 = None
         self.C = None
-        self.ne = None
-        self.ne_int = None
-        self.extension_record = None
-        self.extension_years = None
-        self.xe_bar = None
-        self.s_sq_xe = None
-        self.a = None
-        self.b_sq1 = None
-        self.b_sq2 = None
-        self.b_sq3 = None
-        self.b_sq4 = None
-        self.b_sq5 = None
-        self.b_sq = None
-        self.b = None
-        self.extension_short_record = None  
+
+        self.short_record_flows = None
+
+        #Mean based Estimates
+        self.ne_n1_mean = None
+        self.ne_n1_mean_int = None
+        self.extension_record_mean = None
+        self.extension_years_mean = None
+        self.xe_bar_mean = None
+        self.s_sq_xe_mean = None
+        self.a_mean = None
+        self._b_sq1_mean = None
+        self._b_sq2_mean = None
+        self._b_sq3_mean = None
+        self._b_sq4_mean = None
+        self._b_sq5_mean = None
+        self.b_sq_mean = None
+        self.b_mean = None
+        self.extension_short_record_mean = None 
+        self.extended_short_years_mean = None 
+        self.mean_extension_equation = None
+
+
+        #Variance Based Estimates
+        self.ne_n1_var = None
+        self.ne_n1_var_int = None
+        self.extension_record_var = None
+        self.extension_years_var = None
+        self.xe_bar_var = None
+        self.s_sq_xe_var = None
+        self.a_var = None
+        self._b_sq1_var = None
+        self._b_sq2_var = None
+        self._b_sq3_var = None
+        self._b_sq4_var = None
+        self._b_sq5_var = None
+        self._b_sq_var = None
+        self.b_var = None
+        self.extension_short_record_var = None
+        self.extended_short_years_var = None
+        self.var_extension_equation = None  
 
     def comp_variance(self, record):
         
@@ -144,31 +170,65 @@ class MOVE3(object):
         self.C7 = self.n1*self.n2*(self.n1-4)/((self.n1-3)*(self.n1-2))
         
         self.C = self.C1 + self.C2 - self.C3 + self.C4*(self.C5+self.C6+self.C7)
-        
-        self.ne = 2/ ( (2/(self.n1-1)) + (self.n2/(((self.n1+self.n2-1)**2) * (self.n1-3))) * (self.A*self.p_hat**4 +self.B*self.p_hat**2 + self.C )) + 1 - self.n1 
-        
-        self.ne_int = int(round(self.ne))
-        
-        self.extension_record = self.additional_record[-(self.ne_int):]
-        self.extension_years = self.additional_years[-(self.ne_int):]
-        
-        self.xe_bar = np.mean(self.extension_record)
-        self.s_sq_xe = self.comp_variance(self.extension_record)
-        
-        self.a = ((self.n1+self.ne_int)*self.mu_hat_y-self.n1*self.ybar1)/self.ne_int
-        
-        self.b_sq1 = (self.n1 + self.ne_int-1)*self.sigma_hat_y_sq 
-        self.b_sq2 = (self.n1-1)*self.s_sq_y1
-        self.b_sq3 = self.n1*(self.ybar1-self.mu_hat_y)**2
-        self.b_sq4 = self.ne_int*(self.a-self.mu_hat_y)**2
-        self.b_sq5 = (self.ne_int-1)*self.s_sq_xe
-        
-        self.b_sq = (self.b_sq1 - self.b_sq2 - self.b_sq3 - self.b_sq4)/self.b_sq5
-        
-        self.b = np.sqrt(self.b_sq)
-        
-        self.extension_short_record = [int(round(10**(self.a+self.b*(xi-self.xe_bar)))) for xi in self.extension_record] 
+
         self.short_record_flows = [int(round(10**x)) for x in self.short_record]
-        self.extended_short_record = self.extension_short_record + self.short_record_flows 
-        self.extended_short_years = self.extension_years + self.short_years
+
+        
+        #ne_mean
+        self.ne_n1_mean = self.n1/(1- self.n2/(self.n1 + self.n2)*(self.p_hat**2 - (1-self.p_hat**2/(self.n1-3))))
+        self.ne_n1_mean_int = int(round(self.ne_n1_mean))
+
+        #mean extension record (years to add)
+        self.extension_record_mean = self.additional_record[-(self.ne_n1_mean_int):]
+        self.extension_years_mean = self.additional_years[-(self.ne_n1_mean_int):]
+
+        #mean extension record
+        self.xe_bar_mean = np.mean(self.extension_record_mean)
+        self.s_sq_xe_mean = self.comp_variance(self.extension_record_mean)       
+        self.a_mean = ((self.n1+self.ne_n1_mean_int)*self.mu_hat_y-self.n1*self.ybar1)/self.ne_n1_mean_int
+        
+        #mean slope calculation
+        self._b_sq1_mean = (self.n1 + self.ne_n1_mean_int-1)*self.sigma_hat_y_sq 
+        self._b_sq2_mean = (self.n1-1)*self.s_sq_y1
+        self._b_sq3_mean = self.n1*(self.ybar1-self.mu_hat_y)**2
+        self._b_sq4_mean = self.ne_n1_mean_int*(self.a_mean-self.mu_hat_y)**2
+        self._b_sq5_mean = (self.ne_n1_mean_int-1)*self.s_sq_xe_mean
+        self.b_sq_mean = (self._b_sq1_mean - self._b_sq2_mean - self._b_sq3_mean - self._b_sq4_mean)/self._b_sq5_mean
+        self.b_mean = np.sqrt(self.b_sq_mean)
+
+        self.extension_short_record_mean = [int(round(10**(self.a_mean+self.b_mean*(xi-self.xe_bar_mean)))) for xi in self.extension_record_mean] 
+        self.mean_extension_equation = fr"y = 10^{chr(123)}{np.round(self.a_mean,4)} + {np.round(self.b_mean,4)}(x_i-{chr(92)}overline{chr(123)}{np.round(self.xe_bar_mean,3)}){chr(125)})"
+        
+        
+        self.extended_short_record_mean = self.extension_short_record_mean + self.short_record_flows
+        self.extended_short_years_mean = self.extension_years_mean + self.short_years
+
+
+
+        #ne_var
+        self.ne_n1_var = 2/ ( (2/(self.n1-1)) + (self.n2/(((self.n1+self.n2-1)**2) * (self.n1-3))) * (self.A*self.p_hat**4 +self.B*self.p_hat**2 + self.C )) + 1 - self.n1 
+        
+        self.ne_n1_var_int = int(round(self.ne_n1_var))
+        
+        self.extension_record_var = self.additional_record[-(self.ne_n1_var_int):]
+        self.extension_years_var = self.additional_years[-(self.ne_n1_var_int):]
+        
+        self.xe_bar_var = np.mean(self.extension_record_var)
+        self.s_sq_xe_var = self.comp_variance(self.extension_record_var)
+        
+        self.a_var = ((self.n1+self.ne_n1_var_int)*self.mu_hat_y-self.n1*self.ybar1)/self.ne_n1_var_int
+        
+        self._b_sq1_var = (self.n1 + self.ne_n1_var_int-1)*self.sigma_hat_y_sq 
+        self._b_sq2_var = (self.n1-1)*self.s_sq_y1
+        self._b_sq3_var = self.n1*(self.ybar1-self.mu_hat_y)**2
+        self._b_sq4_var = self.ne_n1_var_int*(self.a_var-self.mu_hat_y)**2
+        self._b_sq5_var = (self.ne_n1_var_int-1)*self.s_sq_xe_var
+        
+        self.b_sq_var = (self._b_sq1_var - self._b_sq2_var - self._b_sq3_var - self._b_sq4_var)/self._b_sq5_var
+        self.b_var = np.sqrt(self.b_sq_var)
+        
+        self.extension_short_record_var = [int(round(10**(self.a_var+self.b_var*(xi-self.xe_bar_var)))) for xi in self.extension_record_var] 
+        self.extended_short_record_var = self.extension_short_record_var + self.short_record_flows 
+        self.extended_short_years_var = self.extension_years_var + self.short_years
+        self.var_extension_equation = fr"y = 10^{chr(123)}{np.round(self.a_var,4)} + {np.round(self.b_var,4)}(x_i-{chr(92)}overline{chr(123)}{np.round(self.xe_bar_var,3)}){chr(125)})"
         
