@@ -14,7 +14,8 @@
 #               Chandler.S.Engel@usace.army.mil
 # Created:      14 February 2020
 # Updated:      5 August 2021
-#               
+#               Added mean and variance based record extensions
+#               Object Oriented MOVE.3
 #-------------------------------------------------------------------------------
 
 import numpy as np
