@@ -198,7 +198,7 @@ class MOVE3(object):
         self.b_mean = np.sqrt(self.b_sq_mean)
 
         self.extension_short_record_mean = [int(round(10**(self.a_mean+self.b_mean*(xi-self.xe_bar_mean)))) for xi in self.extension_record_mean] 
-        self.mean_extension_equation = fr"y = 10^{chr(123)}{np.round(self.a_mean,4)} + {np.round(self.b_mean,4)}(x_i-{chr(92)}overline{chr(123)}{np.round(self.xe_bar_mean,3)}){chr(125)})"
+        self.mean_extension_equation = fr"y = 10^{chr(123)}{np.round(self.a_mean,4)} + {np.round(self.b_mean,4)}(x_i-{chr(92)}overline{chr(123)}{np.round(self.xe_bar_mean,3)}{chr(125)}){chr(125)}"
         
         
         self.extended_short_record_mean = self.extension_short_record_mean + self.short_record_flows
@@ -231,5 +231,5 @@ class MOVE3(object):
         self.extension_short_record_var = [int(round(10**(self.a_var+self.b_var*(xi-self.xe_bar_var)))) for xi in self.extension_record_var] 
         self.extended_short_record_var = self.extension_short_record_var + self.short_record_flows 
         self.extended_short_years_var = self.extension_years_var + self.short_years
-        self.var_extension_equation = fr"y = 10^{chr(123)}{np.round(self.a_var,4)} + {np.round(self.b_var,4)}(x_i-{chr(92)}overline{chr(123)}{np.round(self.xe_bar_var,3)}){chr(125)})"
+        self.var_extension_equation = fr"y = 10^{chr(123)}{np.round(self.a_var,4)} + {np.round(self.b_var,4)}(x_i-{chr(92)}overline{chr(123)}{np.round(self.xe_bar_var,3)}{chr(125)}){chr(125)}"
         
