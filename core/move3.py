@@ -179,9 +179,14 @@ class MOVE3(object):
         self.ne_n1_mean = self.n1/(1- self.n2/(self.n1 + self.n2)*(self.p_hat**2 - (1-self.p_hat**2/(self.n1-3))))
         self.ne_n1_mean_int = int(round(self.ne_n1_mean))
 
-        #mean extension record (years to add)
-        self.extension_record_mean = self.additional_record[-(self.ne_n1_mean_int):]
-        self.extension_years_mean = self.additional_years[-(self.ne_n1_mean_int):]
+        idx_lu = self.long_years.index(self.concurrent_years[0])
+        if idx_lu - self.ne_n1_mean_int < 0:
+            #mean extension record (years to add)
+            self.extension_record_mean = self.additional_record[:idx_lu]
+            self.extension_years_mean = self.additional_years[:idx_lu]
+        else:
+            self.extension_record_mean = self.additional_record[idx_lu - self.ne_n1_mean_int:idx_lu]
+            self.extension_years_mean = self.additional_years[idx_lu - self.ne_n1_mean_int:idx_lu]
 
         #mean extension record
         self.xe_bar_mean = np.mean(self.extension_record_mean)
@@ -211,8 +216,13 @@ class MOVE3(object):
         
         self.ne_n1_var_int = int(round(self.ne_n1_var))
         
-        self.extension_record_var = self.additional_record[-(self.ne_n1_var_int):]
-        self.extension_years_var = self.additional_years[-(self.ne_n1_var_int):]
+        if idx_lu - self.ne_n1_var_int < 0:
+            #mean extension record (years to add)
+            self.extension_record_mean = self.additional_record[:idx_lu]
+            self.extension_years_mean = self.additional_years[:idx_lu]
+        else:
+            self.extension_record_mean = self.additional_record[idx_lu - self.ne_n1_var_int:idx_lu]
+            self.extension_years_mean = self.additional_years[idx_lu - self.ne_n1_var_int:idx_lu]
         
         self.xe_bar_var = np.mean(self.extension_record_var)
         self.s_sq_xe_var = self.comp_variance(self.extension_record_var)
