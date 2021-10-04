@@ -9,8 +9,8 @@ from sklearn.metrics import r2_score
 st.title('MOVE.3 Record Extension')
 
 DATE_COLUMN = 'date/time'
-DATA_URLS = {'long':r'C:\workspace\Isabella_Dam\Task1\data\seasonality_frequency_analysis.xlsx',
-             'short': r"C:\workspace\Isabella_Dam\Task1\data\Isabella_seasonality_frequency_analysis.xlsx"}
+DATA_URLS = {'long':'https://raw.githubusercontent.com/danhamill/MOVE3/Isabella/data/Kern_Bkr_seasonality_frequency_analysis.csv',
+             'short': "https://raw.githubusercontent.com/danhamill/MOVE3/Isabella/data/Isabella_seasonality_frequency_analysis.csv"}
 
 def merge_flow_data(short_data, long_data):
     #Merge short and long data for chart plotting
@@ -22,13 +22,13 @@ def merge_flow_data(short_data, long_data):
 
 @st.cache(allow_output_mutation=True)
 def load_data_short(fpath):
-    data = pd.read_excel(fpath, sheet_name = 'Rain', usecols = ['WY','flow'])
+    data = pd.read_csv(fpath,  usecols = ['WY','flow'])
     data.columns = ['WY', 'FLOW']
     return data
 
 @st.cache(allow_output_mutation=True)
 def load_data_long(fpath):
-    data = pd.read_excel(fpath, sheet_name = 'Rain', usecols = ['WY','flow'])
+    data = pd.read_csv(fpath, usecols = ['WY','flow'])
     data.columns = ['WY', 'FLOW']
     return data
 
