@@ -6,7 +6,7 @@ from core.move3 import MOVE3
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 
-st.title('MOVE.3 Record Extension')
+st.title('Isabella MOVE.3 Record Extension')
 
 DATE_COLUMN = 'date/time'
 DATA_URLS = {'long':'https://raw.githubusercontent.com/danhamill/MOVE3/Isabella/data/Kern_Bkr_seasonality_frequency_analysis.csv',
