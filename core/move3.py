@@ -30,16 +30,19 @@ class MOVE3(object):
         #MOVE3 Constant Parameters
         self.long_record = np.log10(list(self.merge_data.loc[self.merge_data.Record_Type == 'Long Record', 'FLOW']))
         self.long_years = list(self.merge_data.loc[self.merge_data.Record_Type == 'Long Record', 'WY'].dt.year)
+        assert all(x<y for x,y in zip(self.long_years, self.long_years[1:]))
         self.short_record =np.log10(list(self.merge_data.loc[self.merge_data.Record_Type == 'Short Record', 'FLOW']))
         self.short_years = list(self.merge_data.loc[self.merge_data.Record_Type == 'Short Record', 'WY'].dt.year)
-        self.concurrent_years = list(set(self.short_years) & set(self.long_years))
+        assert all(x<y for x,y in zip(self.short_years, self.short_years[1:]))
+        self.concurrent_years = [i for i in self.long_years if i in self.short_years]
+
 
         self._ind1 = [self.long_years.index(year) for year in self.concurrent_years if year in self.long_years]
         self._ind2 = [self.short_years.index(year) for year in self.concurrent_years if year in self.short_years]
 
         self.con_long_record = np.array(self.long_record)[self._ind1]
         self.con_short_record = np.array(self.short_record)[self._ind2]
-        self.additional_years = list(set(self.long_years)-set(self.short_years))
+        self.additional_years = [i for i in self.long_years if i not in self.short_years]
         self._ind3 =  [self.long_years.index(year) for year in self.additional_years if year in self.long_years]
         self.additional_record  = np.array(self.long_record)[self._ind3]
 
@@ -218,11 +221,11 @@ class MOVE3(object):
         
         if idx_lu - self.ne_n1_var_int < 0:
             #mean extension record (years to add)
-            self.extension_record_mean = self.additional_record[:idx_lu]
-            self.extension_years_mean = self.additional_years[:idx_lu]
+            self.extension_record_var = self.additional_record[:idx_lu]
+            self.extension_years_var = self.additional_years[:idx_lu]
         else:
-            self.extension_record_mean = self.additional_record[idx_lu - self.ne_n1_var_int:idx_lu]
-            self.extension_years_mean = self.additional_years[idx_lu - self.ne_n1_var_int:idx_lu]
+            self.extension_record_var = self.additional_record[idx_lu - self.ne_n1_var_int:idx_lu]
+            self.extension_years_var = self.additional_years[idx_lu - self.ne_n1_var_int:idx_lu]
         
         self.xe_bar_var = np.mean(self.extension_record_var)
         self.s_sq_xe_var = self.comp_variance(self.extension_record_var)

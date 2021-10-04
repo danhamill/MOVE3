@@ -38,23 +38,25 @@ long_data = load_data_long(DATA_URLS['long'])
 data_load_state.text("Done! (using st.cache)")
 
 col1, col2 = st.beta_columns(2)
-if col1.checkbox('Show short data'):
-    col1.subheader('Short data')
+if col1.checkbox('Show short record'):
+    col1.subheader('Short record (Isabella)')
     col1.write(short_data)
 
-if col2.checkbox('Show long data'):
-    col2.subheader('Long data')
+if col2.checkbox('Show long record'):
+    col2.subheader('Long record (Kern @ Bakersfield)')
     col2.write(long_data)
 
 merge = merge_flow_data(short_data, long_data)
+
 selection= alt.selection_multi(fields=['Record_Type'], bind='legend')
+
 c = alt.Chart(merge).mark_circle().encode(
     x = alt.X('WY:T', axis = alt.Axis(format = '%Y')),
     y = alt.Y('FLOW'),
     color = alt.Color('Record_Type'), 
     tooltip = [alt.Tooltip('WY:T', format='%Y') ,'FLOW','Record_Type'],
     opacity=alt.condition(selection, alt.value(1), alt.value(0.2))
-)
+).add_selection(selection)
 
 st.altair_chart(c,use_container_width=True)
 
