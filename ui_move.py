@@ -6,11 +6,11 @@ from core.move3 import MOVE3
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 
-st.title('MOVE.3 Record Extension')
+st.title('Isabella MOVE.3 Record Extension')
 
 DATE_COLUMN = 'date/time'
-DATA_URLS = {'long':'https://raw.githubusercontent.com/danhamill/MOVE3/master/data/Etowah.csv',
-             'short': 'https://raw.githubusercontent.com/danhamill/MOVE3/master/data/Suwanee.csv'}
+DATA_URLS = {'long':'https://raw.githubusercontent.com/danhamill/MOVE3/Isabella/data/Kern_Bkr_seasonality_frequency_analysis.csv',
+             'short': "https://raw.githubusercontent.com/danhamill/MOVE3/Isabella/data/Isabella_seasonality_frequency_analysis.csv"}
 
 def merge_flow_data(short_data, long_data):
     #Merge short and long data for chart plotting
@@ -21,33 +21,42 @@ def merge_flow_data(short_data, long_data):
     return merge
 
 @st.cache(allow_output_mutation=True)
-def load_data(fpath):
-    data = pd.read_csv(fpath, header=None, names = ['WY','FLOW'])
+def load_data_short(fpath):
+    data = pd.read_csv(fpath,  usecols = ['WY','flow'])
+    data.columns = ['WY', 'FLOW']
     return data
 
+@st.cache(allow_output_mutation=True)
+def load_data_long(fpath):
+    data = pd.read_csv(fpath, usecols = ['WY','flow'])
+    data.columns = ['WY', 'FLOW']
+    return data
 
 data_load_state = st.text('Loading data...')
-short_data = load_data(DATA_URLS['short'])
-long_data = load_data(DATA_URLS['long'])
+short_data = load_data_short(DATA_URLS['short'])
+long_data = load_data_long(DATA_URLS['long'])
 data_load_state.text("Done! (using st.cache)")
 
 col1, col2 = st.beta_columns(2)
-if col1.checkbox('Show short data'):
-    col1.subheader('Short data')
+if col1.checkbox('Show short record'):
+    col1.subheader('Short record (Isabella)')
     col1.write(short_data)
 
-if col2.checkbox('Show long data'):
-    col2.subheader('Long data')
+if col2.checkbox('Show long record'):
+    col2.subheader('Long record (Kern @ Bakersfield)')
     col2.write(long_data)
 
 merge = merge_flow_data(short_data, long_data)
+
+selection= alt.selection_multi(fields=['Record_Type'], bind='legend')
 
 c = alt.Chart(merge).mark_circle().encode(
     x = alt.X('WY:T', axis = alt.Axis(format = '%Y')),
     y = alt.Y('FLOW'),
     color = alt.Color('Record_Type'), 
-    tooltip = [alt.Tooltip('WY:T', format='%Y') ,'FLOW','Record_Type']
-)
+    tooltip = [alt.Tooltip('WY:T', format='%Y') ,'FLOW','Record_Type'],
+    opacity=alt.condition(selection, alt.value(1), alt.value(0.2))
+).add_selection(selection)
 
 st.altair_chart(c,use_container_width=True)
 
@@ -96,8 +105,8 @@ con_df_log = pd.DataFrame(data = {'WY': res.concurrent_years,
                                         'Long Record':  res.con_long_record}).set_index('WY')
 
 con_chart = alt.Chart(con_df.reset_index()).mark_circle().encode(
-        x = alt.X('Long Record', axis = alt.Axis(title = 'Annual Peak Flow, Long Record'), scale = alt.Scale(type='log')),
-        y = alt.Y('Short Record', axis = alt.Axis(title = 'Annual Peak Flow, Short Record'), scale = alt.Scale(type='log')),
+        x = alt.X('Long Record', axis = alt.Axis(title = 'Annual Peak Flow, Kern Bakersfield'), scale = alt.Scale(type='log')),
+        y = alt.Y('Short Record', axis = alt.Axis(title = 'Annual Peak Flow, Isabella'), scale = alt.Scale(type='log')),
         tooltip = [alt.Tooltip('WY:T', format='%Y')]
     )
 
@@ -134,21 +143,31 @@ extend_df_mean = pd.DataFrame(data = {'WY': pd.to_datetime(res.extended_short_ye
                                     'FLOW': res.extended_short_record_mean,
                                     'Record_Type':'Extended Short Record (mean)'})
 
+
+
 extend_chart_mean = alt.Chart(extend_df_mean).mark_circle().encode(
     x = alt.X('WY:T', axis = alt.Axis(format = '%Y')),
     y = alt.Y('FLOW'),
-    color = alt.Color('Record_Type'), 
-    tooltip = [alt.Tooltip('WY:T', format='%Y') ,'FLOW','Record_Type']
+    color = alt.Color('Record_Type'),
+    opacity=alt.condition(selection, alt.value(1), alt.value(0.2)), 
+    # tooltip = [alt.Tooltip('WY:T', format='%Y') ,'FLOW','Record_Type']
 )
 
 extend_chart_var = alt.Chart(extend_df_var).mark_circle().encode(
     x = alt.X('WY:T', axis = alt.Axis(format = '%Y')),
     y = alt.Y('FLOW'),
-    color = alt.Color('Record_Type'), 
-    tooltip = [alt.Tooltip('WY:T', format='%Y') ,'FLOW','Record_Type']
+    color = alt.Color('Record_Type'),
+    opacity=alt.condition(selection, alt.value(1), alt.value(0.2)), 
+    # tooltip = [alt.Tooltip('WY:T', format='%Y') ,'FLOW','Record_Type']
 )
-merge_chart_mean= alt.layer(c, extend_chart_mean)
-mearge_chart_var = alt.layer(c, extend_chart_var)
+merge_chart_mean= alt.layer(c, extend_chart_mean).add_selection(
+    selection
+)
+
+mearge_chart_var = alt.layer(c, extend_chart_var).add_selection(
+    selection
+)
+
 
 if st.checkbox('Show Mean Extension Plot'):
     st.write('Mean Based Extension')

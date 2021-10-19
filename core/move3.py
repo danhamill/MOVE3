@@ -89,6 +89,7 @@ class MOVE3(object):
         #Mean based Estimates
         self.ne_n1_mean = None
         self.ne_n1_mean_int = None
+        self.ne_mean = None
         self.extension_record_mean = None
         self.extension_years_mean = None
         self.xe_bar_mean = None
@@ -109,6 +110,7 @@ class MOVE3(object):
         #Variance Based Estimates
         self.ne_n1_var = None
         self.ne_n1_var_int = None
+        self.ne_var = None
         self.extension_record_var = None
         self.extension_years_var = None
         self.xe_bar_var = None
@@ -125,6 +127,23 @@ class MOVE3(object):
         self.extended_short_years_var = None
         self.var_extension_equation = None  
 
+        #n2 Based Estimates
+        self.extension_record_n2 = None
+        self.extension_years_n2 = None
+        self.xe_bar_n2 = None
+        self.s_sq_xe_n2 = None
+        self.a_n2 = None
+        self._b_sq1_n2 = None
+        self._b_sq2_n2 = None
+        self._b_sq3_n2 = None
+        self._b_sq4_n2 = None
+        self._b_sq5_n2 = None
+        self._b_sq_n2 = None
+        self.b_n2 = None
+        self.extension_short_record_n2 = None
+        self.extended_short_years_n2 = None
+        self.n2_extension_equation = None  
+
     def comp_variance(self, record):
         
         n1 = len(record)
@@ -134,19 +153,32 @@ class MOVE3(object):
 
     def calculate(self):
         
-        self.s_sq_y1 = self.comp_variance(self.con_short_record)
-        self.s_sq_x1 = self.comp_variance(self.con_long_record)
-        self.s_sq_x2 = self.comp_variance(self.additional_record)
-        
-        self.alpha_sq = (self.n2*(self.n1-4)*(self.n1-1))/((self.n2-1)*(self.n1-3)*(self.n1-2))
+        # Equation 8-4
+        self.s_sq_y1 = self.comp_variance(self.con_short_record) 
+
+        # Equation 8-5
+        self.s_sq_x1 = self.comp_variance(self.con_long_record) 
+
+        # Equation 8-6
+        self.s_sq_x2 = self.comp_variance(self.additional_record) 
+
+        # Equation 8-11
+        self.alpha_sq = (self.n2*(self.n1-4)*(self.n1-1))/((self.n2-1)*(self.n1-3)*(self.n1-2)) 
 
         for _i, _xi in enumerate(self.con_long_record):
             self._bhat_top += (_xi - self.xbar1)*(self.con_short_record[_i]-self.ybar1)
             self._bhat_bottom += (_xi-self.xbar1)**2
-
+        
+        # Equation 8-10
         self.beta_hat = self._bhat_top/self._bhat_bottom 
-        self.p_hat = self.beta_hat * (np.sqrt(self.s_sq_x1)/np.sqrt(self.s_sq_y1))
+
+        # Equation 8-9
+        self.p_hat = self.beta_hat * (np.sqrt(self.s_sq_x1)/np.sqrt(self.s_sq_y1)) 
+
+        #Equation 8-7
         self.mu_hat_y = self.ybar1 + self.n2/(self.n1+self.n2)*self.beta_hat*(self.xbar2-self.xbar1)
+
+        #Equation 8-8
         self.sigma_hat_y_sq = (1/(self.n1+self.n2-1))*((self.n1-1)*self.s_sq_y1 + (self.n2-1)*self.beta_hat**2*self.s_sq_x2 + (self.n2-1)*self.alpha_sq*(1-self.p_hat**2)*self.s_sq_y1+(self.n1*self.n2)/(self.n1+self.n2)*self.beta_hat**2*(self.xbar2-self.xbar1)**2)
 
         self.A1 = (self.n2+2)*(self.n1-6)*(self.n1-8)/(self.n1-5)
@@ -154,6 +186,7 @@ class MOVE3(object):
         self.A3 = (self.n1*self.n2*(self.n1-4)/((self.n1-3)*(self.n1-2)))
         self.A4 = 2*self.n2*(self.n1-4)/(self.n1-3)
         
+        #Equation 8-14
         self.A = self.A1 + self.A2*(self.A3-self.A4-4)
         
         self.B1 = 6*(self.n2+2)*(self.n1-6)/(self.n1-5)
@@ -163,6 +196,7 @@ class MOVE3(object):
         self.B5 = 2*(self.n1+3)
         self.B6 = (2*self.n1*self.n2*(self.n1-4))/((self.n1-3)*(self.n1-2))
 
+        #Equation 8-15
         self.B = self.B1 + self.B2 + self.B3*(self.B4-self.B5-self.B6)   
         
         self.C1 = 2*(self.n1+1)
@@ -173,17 +207,22 @@ class MOVE3(object):
         self.C6 = 2*(self.n1+1)
         self.C7 = self.n1*self.n2*(self.n1-4)/((self.n1-3)*(self.n1-2))
         
+        #Equation 8-16
         self.C = self.C1 + self.C2 - self.C3 + self.C4*(self.C5+self.C6+self.C7)
 
         self.short_record_flows = [int(round(10**x)) for x in self.short_record]
 
         
-        #ne_mean
-        self.ne_n1_mean = self.n1/(1- self.n2/(self.n1 + self.n2)*(self.p_hat**2 - (1-self.p_hat**2/(self.n1-3))))
+        #ne mean extension
+        #Equation 8-18 (Equation 8-17 divided by 8-12)
+        self.ne_n1_mean = self.n1/(1- self.n2/(self.n1 + self.n2)*(self.p_hat**2 - ((1-self.p_hat**2)/(self.n1-3))))
         self.ne_n1_mean_int = int(round(self.ne_n1_mean))
+        self.ne_mean = self.ne_n1_mean_int - self.n1
 
         idx_lu = self.long_years.index(self.concurrent_years[0])
-        if idx_lu - self.ne_n1_mean_int < 0:
+
+        if idx_lu - self.ne_mean < 0:
+
             #mean extension record (years to add)
             self.extension_record_mean = self.additional_record[:idx_lu]
             self.extension_years_mean = self.additional_years[:idx_lu]
@@ -192,9 +231,14 @@ class MOVE3(object):
             self.extension_years_mean = self.additional_years[idx_lu - self.ne_n1_mean_int:idx_lu]
 
         #mean extension record
+        #Equation 8-21
         self.xe_bar_mean = np.mean(self.extension_record_mean)
-        self.s_sq_xe_mean = self.comp_variance(self.extension_record_mean)       
-        self.a_mean = ((self.n1+self.ne_n1_mean_int)*self.mu_hat_y-self.n1*self.ybar1)/self.ne_n1_mean_int
+
+        #Equation 8-22
+        self.s_sq_xe_mean = self.comp_variance(self.extension_record_mean) 
+
+        #Equation 8-23      
+        self.a_mean = ((self.n1+self.ne_mean)*self.mu_hat_y-self.n1*self.ybar1)/self.ne_mean
         
         #mean slope calculation
         self._b_sq1_mean = (self.n1 + self.ne_n1_mean_int-1)*self.sigma_hat_y_sq 
@@ -202,6 +246,8 @@ class MOVE3(object):
         self._b_sq3_mean = self.n1*(self.ybar1-self.mu_hat_y)**2
         self._b_sq4_mean = self.ne_n1_mean_int*(self.a_mean-self.mu_hat_y)**2
         self._b_sq5_mean = (self.ne_n1_mean_int-1)*self.s_sq_xe_mean
+
+        #Equation 8-24
         self.b_sq_mean = (self._b_sq1_mean - self._b_sq2_mean - self._b_sq3_mean - self._b_sq4_mean)/self._b_sq5_mean
         self.b_mean = np.sqrt(self.b_sq_mean)
 
@@ -214,12 +260,44 @@ class MOVE3(object):
 
 
 
-        #ne_var
-        self.ne_n1_var = 2/ ( (2/(self.n1-1)) + (self.n2/(((self.n1+self.n2-1)**2) * (self.n1-3))) * (self.A*self.p_hat**4 +self.B*self.p_hat**2 + self.C )) + 1 - self.n1 
+        #n2 extension
+        self.extension_record_n2 = self.additional_record[:idx_lu]
+        self.extension_years_n2 = self.additional_years[:idx_lu]
+        
+        #Equation 8-21
+        self.xe_bar_n2 = np.mean(self.extension_record_n2)
+
+        #Equation 8-22
+        self.s_sq_xe_n2 = self.comp_variance(self.extension_record_n2)
+        
+        #Equation 8-23
+        self.a_n2 = ((self.n1+self.n2)*self.mu_hat_y-self.n1*self.ybar1)/self.n2
+        
+        self._b_sq1_n2 = (self.n1 + self.n2-1)*self.sigma_hat_y_sq 
+        self._b_sq2_n2 = (self.n1-1)*self.s_sq_y1
+        self._b_sq3_n2 = self.n1*(self.ybar1-self.mu_hat_y)**2
+        self._b_sq4_n2 = self.n2*(self.a_n2-self.mu_hat_y)**2
+        self._b_sq5_n2 = (self.n2-1)*self.s_sq_xe_n2
+        
+
+        #Equation 8-24
+        self.b_sq_n2 = (self._b_sq1_n2 - self._b_sq2_n2 - self._b_sq3_n2 - self._b_sq4_n2)/self._b_sq5_n2
+        self.b_n2 = np.sqrt(self.b_sq_n2)
+
+        
+        self.extension_short_record_n2 = [int(round(10**(self.a_n2+self.b_n2*(xi-self.xe_bar_n2)))) for xi in self.extension_record_n2] 
+        self.extended_short_record_n2 = self.extension_short_record_n2 + self.short_record_flows 
+        self.extended_short_years_n2 = self.extension_years_n2 + self.short_years
+        self.n2_extension_equation = fr"y = 10^{chr(123)}{np.round(self.a_n2,4)} + {np.round(self.b_n2,4)}(x_i-{chr(92)}overline{chr(123)}{np.round(self.xe_bar_n2,3)}{chr(125)}){chr(125)}"
+        
+        #ne var extension
+        #Equation 8-19
+        self.ne_n1_var = 2/ ( (2/(self.n1-1)) + (self.n2/(((self.n1+self.n2-1)**2) * (self.n1-3))) * (self.A*self.p_hat**4 +self.B*self.p_hat**2 + self.C )) + 1 
         
         self.ne_n1_var_int = int(round(self.ne_n1_var))
-        
-        if idx_lu - self.ne_n1_var_int < 0:
+        self.ne_var = self.ne_n1_var_int - self.n1 
+
+        if idx_lu - self.ne_var < 0:
             #mean extension record (years to add)
             self.extension_record_var = self.additional_record[:idx_lu]
             self.extension_years_var = self.additional_years[:idx_lu]
@@ -227,10 +305,14 @@ class MOVE3(object):
             self.extension_record_var = self.additional_record[idx_lu - self.ne_n1_var_int:idx_lu]
             self.extension_years_var = self.additional_years[idx_lu - self.ne_n1_var_int:idx_lu]
         
+        #Equation 8-21
         self.xe_bar_var = np.mean(self.extension_record_var)
+
+        #Equation 8-22
         self.s_sq_xe_var = self.comp_variance(self.extension_record_var)
         
-        self.a_var = ((self.n1+self.ne_n1_var_int)*self.mu_hat_y-self.n1*self.ybar1)/self.ne_n1_var_int
+        #Equation 8-23
+        self.a_var = ((self.n1+self.ne_var)*self.mu_hat_y-self.n1*self.ybar1)/self.ne_var
         
         self._b_sq1_var = (self.n1 + self.ne_n1_var_int-1)*self.sigma_hat_y_sq 
         self._b_sq2_var = (self.n1-1)*self.s_sq_y1
@@ -238,6 +320,7 @@ class MOVE3(object):
         self._b_sq4_var = self.ne_n1_var_int*(self.a_var-self.mu_hat_y)**2
         self._b_sq5_var = (self.ne_n1_var_int-1)*self.s_sq_xe_var
         
+        #Equation 8-24
         self.b_sq_var = (self._b_sq1_var - self._b_sq2_var - self._b_sq3_var - self._b_sq4_var)/self._b_sq5_var
         self.b_var = np.sqrt(self.b_sq_var)
         
