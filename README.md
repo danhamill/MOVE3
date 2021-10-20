@@ -6,7 +6,7 @@ This application is designed to perform Bulletin 17C (England et al. 2019) recor
 
 2. ne (mean) extenstion - This provides extension based upon the variance of the mean.  
 
-3. ne (variance extnesion -- This providees the shortest possible short record exenstion using the variance of variance.  This type of extension is prefferable when uncertainity is primary concern.  Note: This is the preffered approach presented in Bulletin 17C
+3. ne (variance) extnesion - This providees the shortest possible short record exenstion using the variance of variance.  This type of extension is prefferable when uncertainity is primary concern.  Note: This is the preffered approach presented in Bulletin 17C
 
 ## Assumptions
 
