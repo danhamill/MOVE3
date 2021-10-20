@@ -220,7 +220,9 @@ class MOVE3(object):
         self.ne_mean = self.ne_n1_mean_int - self.n1
 
         idx_lu = self.long_years.index(self.concurrent_years[0])
+
         if idx_lu - self.ne_mean < 0:
+
             #mean extension record (years to add)
             self.extension_record_mean = self.additional_record[:idx_lu]
             self.extension_years_mean = self.additional_years[:idx_lu]
@@ -277,9 +279,11 @@ class MOVE3(object):
         self._b_sq4_n2 = self.n2*(self.a_n2-self.mu_hat_y)**2
         self._b_sq5_n2 = (self.n2-1)*self.s_sq_xe_n2
         
+
         #Equation 8-24
         self.b_sq_n2 = (self._b_sq1_n2 - self._b_sq2_n2 - self._b_sq3_n2 - self._b_sq4_n2)/self._b_sq5_n2
         self.b_n2 = np.sqrt(self.b_sq_n2)
+
         
         self.extension_short_record_n2 = [int(round(10**(self.a_n2+self.b_n2*(xi-self.xe_bar_n2)))) for xi in self.extension_record_n2] 
         self.extended_short_record_n2 = self.extension_short_record_n2 + self.short_record_flows 
