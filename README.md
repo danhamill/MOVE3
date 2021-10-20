@@ -1,6 +1,5 @@
 # MOVE3
 Working dashboard for MOVE.3 streamflow record extension.
-Tested on python 3.7
 
 This application is designed to perform Bulletin 17C (England et al. 2019) record extenstion using MOVE.3 Methodologies.  There are three possible extenstion using the MOVE.3:
 1. Full N2 extenstion - This provides the longest possible short record extension.  Be careful because this type of extension has the potienatl to be artifically long and could result in underestimation of uncertainity of the resutling flood frequency curve.
@@ -18,11 +17,14 @@ Data are read into the applicaiton from a csv format with the following format:
 | 1900 | 3000 |
 | 1901 | 5000 |
 
-There should be a individual files for short and long records.  The files get merged into a single dataframe within the code.
+There should be a individual files for short and long records.  The files get merged into a single dataframe within the code. Example input is provided in `data/`
 
 ## References
 - England, John F., Jr., Timothy A. Cohn, Beth A. Faber, Jery R. Stedinger, Wilbert O. Thomas Jr., Andrea G. Veilleux, Julie E. Kiang, and Robert R. Mason, Jr. 2019. “Guidelines for Determining Flood Flow Frequency—Bulletin 17C.” Techniques and Methods. US Geological Survey. https://doi.org/10.3133/tm4b5.
 ## Requirements
+
+Tested on python 3.7
+
 1. altair
 2. sklearn
 3. numpy
