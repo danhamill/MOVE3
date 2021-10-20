@@ -227,8 +227,8 @@ class MOVE3(object):
             self.extension_record_mean = self.additional_record[:idx_lu]
             self.extension_years_mean = self.additional_years[:idx_lu]
         else:
-            self.extension_record_mean = self.additional_record[idx_lu - self.ne_n1_mean_int:idx_lu]
-            self.extension_years_mean = self.additional_years[idx_lu - self.ne_n1_mean_int:idx_lu]
+            self.extension_record_mean = self.additional_record[idx_lu - self.ne_mean:idx_lu]
+            self.extension_years_mean = self.additional_years[idx_lu - self.ne_mean:idx_lu]
 
         #mean extension record
         #Equation 8-21
@@ -302,8 +302,8 @@ class MOVE3(object):
             self.extension_record_var = self.additional_record[:idx_lu]
             self.extension_years_var = self.additional_years[:idx_lu]
         else:
-            self.extension_record_var = self.additional_record[idx_lu - self.ne_n1_var_int:idx_lu]
-            self.extension_years_var = self.additional_years[idx_lu - self.ne_n1_var_int:idx_lu]
+            self.extension_record_var = self.additional_record[idx_lu - self.ne_var:idx_lu]
+            self.extension_years_var = self.additional_years[idx_lu - self.ne_var:idx_lu]
         
         #Equation 8-21
         self.xe_bar_var = np.mean(self.extension_record_var)
