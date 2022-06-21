@@ -7,11 +7,11 @@ from core.move3 import MOVE3
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 
-st.title('Isabella MOVE.3 Record Extension')
+st.title('USGS MOVE.3 Record Extension Example')
 
 DATE_COLUMN = 'date/time'
-DATA_URLS = {'long':'https://raw.githubusercontent.com/danhamill/MOVE3/Isabella/data/Kern_Bkr_seasonality_frequency_analysis.csv',
-             'short': "https://raw.githubusercontent.com/danhamill/MOVE3/Isabella/data/Isabella_seasonality_frequency_analysis.csv"}
+DATA_URLS = {'long':'https://raw.githubusercontent.com/danhamill/MOVE3/master/data/Etowah.csv',
+             'short': "https://raw.githubusercontent.com/danhamill/MOVE3/master/data/Suwanee.csv"}
 
 def merge_flow_data(short_data, long_data):
     #Merge short and long data for chart plotting
@@ -23,14 +23,12 @@ def merge_flow_data(short_data, long_data):
 
 @st.cache(allow_output_mutation=True)
 def load_data_short(fpath):
-    data = pd.read_csv(fpath,  usecols = ['WY','flow'])
-    data.columns = ['WY', 'FLOW']
+    data = pd.read_csv(fpath,  header=None, names = ['WY','flow'])
     return data
 
 @st.cache(allow_output_mutation=True)
 def load_data_long(fpath):
-    data = pd.read_csv(fpath, usecols = ['WY','flow'])
-    data.columns = ['WY', 'FLOW']
+    data = pd.read_csv(fpath, header=None, names = ['WY','flow'])
     return data
 
 data_load_state = st.text('Loading data...')
@@ -38,16 +36,17 @@ short_data = load_data_short(DATA_URLS['short'])
 long_data = load_data_long(DATA_URLS['long'])
 data_load_state.text("Done! (using st.cache)")
 
-col1, col2 = st.beta_columns(2)
+col1, col2 = st.columns(2)
 if col1.checkbox('Show short record'):
-    col1.subheader('Short record (Isabella)')
+    col1.subheader('Short record (Suwanee)')
     col1.write(short_data)
 
 if col2.checkbox('Show long record'):
-    col2.subheader('Long record (Kern @ Bakersfield)')
+    col2.subheader('Long record (Etowah)')
     col2.write(long_data)
 
 merge = merge_flow_data(short_data, long_data)
+merge.columns = ['WY','FLOW','Record_Type']
 
 selection= alt.selection_multi(fields=['Record_Type'], bind='legend')
 
@@ -102,11 +101,7 @@ con_df_log = pd.DataFrame(data = {'WY': res.concurrent_years,
                                         'Short Record': res.con_short_record,
                                         'Long Record':  res.con_long_record}).set_index('WY')
 
-con_chart = alt.Chart(con_df.reset_index()).mark_circle().encode(
-        x = alt.X('Long Record', axis = alt.Axis(title = 'Annual Peak Flow, Kern Bakersfield'), scale = alt.Scale(type='log')),
-        y = alt.Y('Short Record', axis = alt.Axis(title = 'Annual Peak Flow, Isabella'), scale = alt.Scale(type='log')),
-        tooltip = [alt.Tooltip('WY:T', format='%Y')]
-    )
+
 
 
 linear_model = LinearRegression().fit(con_df_log[['Long Record']], con_df_log[['Short Record']])
@@ -116,15 +111,33 @@ con_int = float(np.round(10**linear_model.intercept_,4))
 y_pred = linear_model.predict(con_df_log[['Long Record']])
 r_sqd = np.round(r2_score( con_df_log[['Short Record']], y_pred),3)
 
-col1, col2 = st.beta_columns(2)
+col1, col2 = st.columns(2)
 eqn = fr"y ={con_int}x^{chr(123)}{con_slope}{chr(125)} "
 col1.latex(eqn)
 col2.latex(rf"R^{2} = {r_sqd}")
 
 
-st.altair_chart(con_chart, use_container_width=True)
+con_chart = alt.Chart(con_df.reset_index()).mark_circle().encode(
+        x = alt.X('Long Record',  axis = alt.Axis(title = 'Annual Peak Flow, Etowah'), scale = alt.Scale(type='log')),
+        y = alt.Y('Short Record', axis = alt.Axis(title = 'Annual Peak Flow, Suwanee'), scale = alt.Scale(type='log')),
+        tooltip = [alt.Tooltip('WY:T', format='%Y')]
+    )
 
-col1, col2, col3, col4 = st.beta_columns(4)
+con_df.loc[:,'xrange'] = np.linspace(3000,30000, con_df.shape[0])
+con_df.loc[:,'yrange'] = con_int*con_df.xrange**(con_slope)
+
+
+con_chart2 = alt.Chart(con_df.reset_index()).mark_line(color='black').encode(
+        x = alt.X('xrange', axis = alt.Axis(title = 'Annual Peak Flow, Etowah'),  scale = alt.Scale(domain = [3000,30000],type='log')),
+        y = alt.Y('yrange', axis = alt.Axis(title = 'Annual Peak Flow, Suwanee'),  scale = alt.Scale(type='log'))
+    )
+
+con_merge = alt.layer( con_chart2, con_chart)
+
+
+st.altair_chart(con_merge, use_container_width=True)
+
+col1, col2, col3, col4 = st.columns(4)
 if col1.checkbox("Show MOVE.3 Parameters"):
 
     stat_df_move = pd.DataFrame.from_dict(move_stats, orient='index', columns = ['Parameter'])
