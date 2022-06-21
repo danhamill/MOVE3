@@ -3,6 +3,7 @@ st.set_page_config(layout="wide")
 import pandas as pd
 import numpy as np
 import altair as alt
+from altair_saver import save
 from core.move3 import MOVE3
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
@@ -59,6 +60,8 @@ c = alt.Chart(merge).mark_circle().encode(
     opacity=alt.condition(selection, alt.value(1), alt.value(0.2))
 ).add_selection(selection)
 
+save(c, r'output\two_records.svg', method= 'selenium', scale_factor =3)
+
 st.altair_chart(c,use_container_width=True)
 
 res = MOVE3(merge)
@@ -103,10 +106,23 @@ con_df_log = pd.DataFrame(data = {'WY': res.concurrent_years,
                                         'Long Record':  res.con_long_record}).set_index('WY')
 
 con_chart = alt.Chart(con_df.reset_index()).mark_circle().encode(
-        x = alt.X('Long Record', axis = alt.Axis(title = 'Annual Peak Flow, Kern Bakersfield'), scale = alt.Scale(type='log')),
+        x = alt.X('Long Record', axis = alt.Axis(title = 'Annual Peak Flow, Kern Bakersfield'), scale = alt.Scale(domain = [100, 100000], type='log')),
         y = alt.Y('Short Record', axis = alt.Axis(title = 'Annual Peak Flow, Isabella'), scale = alt.Scale(type='log')),
         tooltip = [alt.Tooltip('WY:T', format='%Y')]
     )
+
+con_df.loc[:,'xrange'] = np.linspace(100,100000, 68)
+con_df.loc[:,'yrange'] = 1.2594*con_df.xrange**(0.9641)
+
+
+con_chart2 = alt.Chart(con_df.reset_index()).mark_line(color='black').encode(
+        x = alt.X('xrange', axis = alt.Axis(title = 'Annual Peak Flow, Kern Bakersfield'), scale = alt.Scale(domain = [100, 100000],type='log')),
+        y = alt.Y('yrange', axis = alt.Axis(title = 'Annual Peak Flow, Isabella'), scale = alt.Scale(type='log'))
+    )
+
+con_merge = alt.layer( con_chart2, con_chart)
+
+save(con_merge, r'output\scatter_compariton.svg', method= 'selenium', scale_factor =3)
 
 
 linear_model = LinearRegression().fit(con_df_log[['Long Record']], con_df_log[['Short Record']])
@@ -122,7 +138,7 @@ col1.latex(eqn)
 col2.latex(rf"R^{2} = {r_sqd}")
 
 
-st.altair_chart(con_chart, use_container_width=True)
+st.altair_chart(con_merge, use_container_width=True)
 
 col1, col2, col3, col4 = st.beta_columns(4)
 if col1.checkbox("Show MOVE.3 Parameters"):
@@ -179,6 +195,7 @@ extend_chart_n2 = alt.Chart(extend_df_n2).mark_circle().encode(
     # tooltip = [alt.Tooltip('WY:T', format='%Y') ,'FLOW','Record_Type']
 )
 
+
 merge_chart_mean= alt.layer(c, extend_chart_mean).add_selection(
     selection
 )
@@ -190,6 +207,7 @@ mearge_chart_var = alt.layer(c, extend_chart_var).add_selection(
 mearge_chart_n2 = alt.layer(c, extend_chart_n2).add_selection(
     selection
 )
+save(mearge_chart_n2, r'output\extended_record.svg', method= 'selenium', scale_factor =3)
 
 if st.checkbox('Show Mean Extension Plot'):
     st.write('Mean Based Extension')
