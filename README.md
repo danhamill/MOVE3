@@ -1,4 +1,5 @@
 [![DOI](https://zenodo.org/badge/392819995.svg)](https://zenodo.org/badge/latestdoi/392819995)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/danhamill/move3/ui_move.py)
 
 # MOVE3
 Working dashboard for MOVE.3 streamflow record extension.
