@@ -1,18 +1,18 @@
 # MOVE3
 Working dashboard for MOVE.3 streamflow record extension.
 
-This application is designed to perform Bulletin 17C (England et al. 2019) record extenstion using MOVE.3 Methodologies.  There are three possible extenstion using the MOVE.3:
-1. Full N2 extenstion - This provides the longest possible short record extension.  Be careful because this type of extension has the potienatl to be artifically long and could result in underestimation of uncertainity of the resutling flood frequency curve.
+This application is designed to perform Bulletin 17C (England et al. 2019) record extension using MOVE.3 Methodologies.  There are three possible extension using the MOVE.3:
+1. Full N2 extension - This provides the longest possible short record extension.  Be careful because this type of extension has the potential to be artificially long and could result in underestimation of uncertainty of the resulting flood frequency curve.
 
-2. ne (mean) extenstion - This provides extension based upon the variance of the mean.  
+2. ne (mean) extension - This provides extension based upon the variance of the mean.  
 
 
-3. ne (variance extnesion -- This providees the shortest possible short record exenstion using the variance of variance.  This type of extension is prefferable when uncertainity is primary concern.  Note: This is the preffered approach presented in Bulletin 17C
+3. ne (variance extension) -- This provides the shortest possible short record extension using the variance of variance.  This type of extension is preferable when uncertainty is primary concern.  Note: This is the preferred approach presented in Bulletin 17C
 
 
 ## Assumptions
 
-Data are read into the applicaiton from a csv format with the following format:
+Data are read into the application from a csv format with the following format:
 
 | WY   | flow |
 |------|------|
