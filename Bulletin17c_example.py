@@ -61,8 +61,8 @@ def main():
         y = alt.X('Long Record', axis = alt.Axis(title = 'Annual Peak Flow, Short Record'), scale = alt.Scale(type='log'))
     )
 
-    extend_df = pd.DataFrame(data = {'WY': pd.to_datetime(res.extended_short_years, format = '%Y'),
-                                     'FLOW': res.extended_short_record,
+    extend_df = pd.DataFrame(data = {'WY': pd.to_datetime(res.extended_short_years_var, format = '%Y'),
+                                     'FLOW': res.extended_short_record_var,
                                      'Record_Type':'Extended Sort Record'})
                                      
     extend_chart = alt.Chart(extend_df).mark_circle().encode(
@@ -72,7 +72,7 @@ def main():
         tooltip = ['WY','FLOW','Record_Type']
     )
 
-    ()
+
 
 if __name__ == '__main__':
     main()

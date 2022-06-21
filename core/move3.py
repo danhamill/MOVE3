@@ -23,10 +23,10 @@ import numpy as np
 
 class MOVE3(object):
 
-    def __init__(self, merge_data):
+    def __init__(self, merge_data, roundInt=True):
 
         self.merge_data = merge_data
-
+        self.roundInt = roundInt
         #MOVE3 Constant Parameters
         self.long_record = np.log10(list(self.merge_data.loc[self.merge_data.Record_Type == 'Long Record', 'FLOW']))
         self.long_years = list(self.merge_data.loc[self.merge_data.Record_Type == 'Long Record', 'WY'].dt.year)
@@ -145,11 +145,14 @@ class MOVE3(object):
         self.n2_extension_equation = None  
 
     def comp_variance(self, record):
-        
-        n1 = len(record)
-        ybar = np.mean(record)
-        s_sq_y = sum([(yi-ybar)**2 for yi in record]) / (n1-1)
-        return s_sq_y
+        if len(record)>1:
+            n1 = len(record)
+            ybar = np.mean(record)
+            s_sq_y = sum([(yi-ybar)**2 for yi in record]) / (n1-1)
+            return s_sq_y
+        else:
+            return 0
+    # if computing the variance for ne=1 this fails
 
     def calculate(self):
         
@@ -210,8 +213,10 @@ class MOVE3(object):
         #Equation 8-16
         self.C = self.C1 + self.C2 - self.C3 + self.C4*(self.C5+self.C6+self.C7)
 
-        self.short_record_flows = [int(round(10**x)) for x in self.short_record]
-
+        if self.roundInt:
+            self.short_record_flows = [int(round(10**x)) for x in self.short_record]
+        else:
+            self.short_record_flows = [10**x for x in self.short_record]
         
         #ne mean extension
         #Equation 8-18 (Equation 8-17 divided by 8-12)
@@ -219,16 +224,14 @@ class MOVE3(object):
         self.ne_n1_mean_int = int(round(self.ne_n1_mean))
         self.ne_mean = self.ne_n1_mean_int - self.n1
 
-        idx_lu = self.long_years.index(self.concurrent_years[0])
-
-        if idx_lu - self.ne_mean < 0:
-
-            #mean extension record (years to add)
-            self.extension_record_mean = self.additional_record[:idx_lu]
-            self.extension_years_mean = self.additional_years[:idx_lu]
-        else:
-            self.extension_record_mean = self.additional_record[idx_lu - self.ne_mean:idx_lu]
-            self.extension_years_mean = self.additional_years[idx_lu - self.ne_mean:idx_lu]
+        missing_years = [i for i in self.long_years if i not in self.short_years]
+        idx_lus = [self.long_years.index(i) for i in missing_years]
+        
+        self.extension_record_mean = []
+        self.extension_years_mean = []
+        for idx_lu in idx_lus[-self.ne_mean:]:
+            self.extension_record_mean.append(self.long_record[idx_lu])
+            self.extension_years_mean.append(self.long_years[idx_lu])
 
         #mean extension record
         #Equation 8-21
@@ -249,20 +252,25 @@ class MOVE3(object):
 
         #Equation 8-24
         self.b_sq_mean = (self._b_sq1_mean - self._b_sq2_mean - self._b_sq3_mean - self._b_sq4_mean)/self._b_sq5_mean
-        self.b_mean = np.sqrt(self.b_sq_mean)
-
-        self.extension_short_record_mean = [int(round(10**(self.a_mean+self.b_mean*(xi-self.xe_bar_mean)))) for xi in self.extension_record_mean] 
-        self.mean_extension_equation = fr"y = 10^{chr(123)}{np.round(self.a_mean,4)} + {np.round(self.b_mean,4)}(x_i-{chr(92)}overline{chr(123)}{np.round(self.xe_bar_mean,3)}{chr(125)}){chr(125)}"
-        
-        
-        self.extended_short_record_mean = self.extension_short_record_mean + self.short_record_flows
-        self.extended_short_years_mean = self.extension_years_mean + self.short_years
-
+                
+        if abs(self.b_sq_mean) != np.inf and self.b_sq_mean >0:
+            self.b_mean = np.sqrt(self.b_sq_mean)
+            if self.roundInt:
+                self.extension_short_record_mean = [int(round(10**(self.a_mean+self.b_mean*(xi-self.xe_bar_mean)))) for xi in self.extension_record_mean] 
+            else:
+                self.extension_short_record_mean = [10**(self.a_mean+self.b_mean*(xi-self.xe_bar_mean)) for xi in self.extension_record_mean] 
+            self.mean_extension_equation = fr"y = 10^{chr(123)}{np.round(self.a_mean,4)} + {np.round(self.b_mean,4)}(x_i-{chr(92)}overline{chr(123)}{np.round(self.xe_bar_mean,3)}{chr(125)}){chr(125)}"
+            self.extended_short_record_mean = self.extension_short_record_mean + self.short_record_flows
+            self.extended_short_years_mean = self.extension_years_mean + self.short_years
+        else:
+            self.extension_short_record_mean = [np.nan]
+            self.extended_short_record_mean = [np.nan]
+            self.extended_short_years_mean = [np.nan]
 
 
         #n2 extension
-        self.extension_record_n2 = self.additional_record[:idx_lu]
-        self.extension_years_n2 = self.additional_years[:idx_lu]
+        self.extension_record_n2 = self.additional_record
+        self.extension_years_n2 = self.additional_years
         
         #Equation 8-21
         self.xe_bar_n2 = np.mean(self.extension_record_n2)
@@ -272,7 +280,6 @@ class MOVE3(object):
         
         #Equation 8-23
         self.a_n2 = ((self.n1+self.n2)*self.mu_hat_y-self.n1*self.ybar1)/self.n2
-        
         self._b_sq1_n2 = (self.n1 + self.n2-1)*self.sigma_hat_y_sq 
         self._b_sq2_n2 = (self.n1-1)*self.s_sq_y1
         self._b_sq3_n2 = self.n1*(self.ybar1-self.mu_hat_y)**2
@@ -282,28 +289,32 @@ class MOVE3(object):
 
         #Equation 8-24
         self.b_sq_n2 = (self._b_sq1_n2 - self._b_sq2_n2 - self._b_sq3_n2 - self._b_sq4_n2)/self._b_sq5_n2
-        self.b_n2 = np.sqrt(self.b_sq_n2)
+        if abs(self.b_sq_n2)  != np.inf and self.b_sq_n2 >0:
+            self.b_n2  = np.sqrt(self.b_sq_n2 )
 
-        
-        self.extension_short_record_n2 = [int(round(10**(self.a_n2+self.b_n2*(xi-self.xe_bar_n2)))) for xi in self.extension_record_n2] 
-        self.extended_short_record_n2 = self.extension_short_record_n2 + self.short_record_flows 
-        self.extended_short_years_n2 = self.extension_years_n2 + self.short_years
-        self.n2_extension_equation = fr"y = 10^{chr(123)}{np.round(self.a_n2,4)} + {np.round(self.b_n2,4)}(x_i-{chr(92)}overline{chr(123)}{np.round(self.xe_bar_n2,3)}{chr(125)}){chr(125)}"
-        
+            if self.roundInt:
+               self.extension_short_record_n2 = [int(round(10**(self.a_n2+self.b_n2*(xi-self.xe_bar_n2)))) for xi in self.extension_record_n2] 
+            else: 
+                self.extension_short_record_n2 = [10**(self.a_n2 +self.b_n2 *(xi-self.xe_bar_n2 )) for xi in self.extension_record_n2 ]
+            self.n2_extension_equation = fr"y = 10^{chr(123)}{np.round(self.a_mean,4)} + {np.round(self.b_mean,4)}(x_i-{chr(92)}overline{chr(123)}{np.round(self.xe_bar_mean,3)}{chr(125)}){chr(125)}"
+            self.extended_short_record_n2  = self.extension_short_record_n2  + self.short_record_flows
+            self.extended_short_years_n2  = self.extension_years_n2  + self.short_years
+        else:
+            self.extension_short_record_n2  = [np.nan]
+            self.extended_short_record_n2  = [np.nan]
+            self.extended_short_years_n2  = [np.nan]
+      
         #ne var extension
         #Equation 8-19
         self.ne_n1_var = 2/ ( (2/(self.n1-1)) + (self.n2/(((self.n1+self.n2-1)**2) * (self.n1-3))) * (self.A*self.p_hat**4 +self.B*self.p_hat**2 + self.C )) + 1 
-        
         self.ne_n1_var_int = int(round(self.ne_n1_var))
         self.ne_var = self.ne_n1_var_int - self.n1 
 
-        if idx_lu - self.ne_var < 0:
-            #mean extension record (years to add)
-            self.extension_record_var = self.additional_record[:idx_lu]
-            self.extension_years_var = self.additional_years[:idx_lu]
-        else:
-            self.extension_record_var = self.additional_record[idx_lu - self.ne_var:idx_lu]
-            self.extension_years_var = self.additional_years[idx_lu - self.ne_var:idx_lu]
+        self.extension_record_var = []
+        self.extension_years_var = []
+        for idx_lu in idx_lus[-self.ne_var:]:
+            self.extension_record_var.append(self.long_record[idx_lu])
+            self.extension_years_var.append(self.long_years[idx_lu])
         
         #Equation 8-21
         self.xe_bar_var = np.mean(self.extension_record_var)
@@ -322,10 +333,19 @@ class MOVE3(object):
         
         #Equation 8-24
         self.b_sq_var = (self._b_sq1_var - self._b_sq2_var - self._b_sq3_var - self._b_sq4_var)/self._b_sq5_var
-        self.b_var = np.sqrt(self.b_sq_var)
-        
-        self.extension_short_record_var = [int(round(10**(self.a_var+self.b_var*(xi-self.xe_bar_var)))) for xi in self.extension_record_var] 
-        self.extended_short_record_var = self.extension_short_record_var + self.short_record_flows 
-        self.extended_short_years_var = self.extension_years_var + self.short_years
-        self.var_extension_equation = fr"y = 10^{chr(123)}{np.round(self.a_var,4)} + {np.round(self.b_var,4)}(x_i-{chr(92)}overline{chr(123)}{np.round(self.xe_bar_var,3)}{chr(125)}){chr(125)}"
+        if abs(self.b_sq_var)  != np.inf and self.b_sq_var >0:
+            self.b_var  = np.sqrt(self.b_sq_var )
+            
+            if self.roundInt:
+                self.extension_short_record_var = [int(round(10**(self.a_var+self.b_var*(xi-self.xe_bar_var)))) for xi in self.extension_record_var] 
+            else:
+                self.extension_short_record_var = [10**(self.a_var +self.b_var *(xi-self.xe_bar_var )) for xi in self.extension_record_var ] 
+            
+            self.n2_extension_equation = fr"y = 10^{chr(123)}{np.round(self.a_mean,4)} + {np.round(self.b_mean,4)}(x_i-{chr(92)}overline{chr(123)}{np.round(self.xe_bar_mean,3)}{chr(125)}){chr(125)}"
+            self.extended_short_record_var  = self.extension_short_record_var  + self.short_record_flows
+            self.extended_short_years_var  = self.extension_years_var  + self.short_years
+        else:
+            self.extension_short_record_var  = [np.nan]
+            self.extended_short_record_var  = [np.nan]
+            self.extended_short_years_var  = [np.nan]
         
