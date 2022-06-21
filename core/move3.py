@@ -16,6 +16,9 @@
 # Updated:      5 August 2021
 #               Added mean and variance based record extensions
 #               Object Oriented MOVE.3
+#               21 June 2022
+#               Added in option to not round flows to integer
+#               More robust logic for selecting years to gap fill in short station
 #-------------------------------------------------------------------------------
 
 import numpy as np
