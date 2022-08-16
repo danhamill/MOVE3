@@ -1,1 +1,18 @@
 *.pyc
+output/1Day_Bivar.png
+output/bivariate_01Day.svg
+output/bivariate_edited_v2.png
+output/bivariate_edited_v3.png
+output/bivariate_edited.png
+output/bivariate_mulitple_nday_working.svg
+output/bivariate_mulitple_nday.svg
+output/bivariate_multiple_nDay.png
+output/extended_record_workiing.svg
+output/extended_record.png
+output/extended_record.svg
+output/scatter_compariton-working.svg
+output/scatter_compariton.png
+output/scatter_compariton.svg
+output/Two Gages Reformatted.png
+output/two_records working.svg
+output/two_records.svg
