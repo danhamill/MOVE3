@@ -50,15 +50,18 @@ def getMOVE(merge, nDay):
 
     stats_mean = {'ne': res.ne_mean,
                 'a': res.a_mean,
-                'b':res.b_mean}
+                'b':res.b_mean,
+                'x_bar':res.xe_bar_mean}
 
     stats_var = {'ne': res.ne_var,
                 'a': res.a_var,
-                'b':res.b_var}
+                'b':res.b_var,
+                'x_bar':res.xe_bar_var}
 
     stats_n2 = {'ne': res.n2,
                 'a': res.a_n2,
                 'b':res.b_n2,
+                'x_bar': res.xe_bar_n2
                 }
 
     con_df = pd.DataFrame(data = {'WY': res.concurrent_years, 
