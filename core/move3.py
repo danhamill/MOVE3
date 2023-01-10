@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# Name          MOVE method USGS
+# Name          MOVE3 method USGS
 # Description:  Tool to conduct gauge extension on a short record
 #               using data from a long record gage. Conducted based
 #               on guidance in Guidelines for Determining Flood Flow Frequency
@@ -11,9 +11,11 @@
 # Author:       Daniel Hamill
 #               US Army Corps of Engineers
 #               Sacramento District
-#               Chandler.S.Engel@usace.army.mil
+#               Daniel.D.Hamill@usace.army.mil
 # Created:      14 February 2020
-# Updated:      5 August 2021
+# Updated:      9 January 2023
+#               Small refactor to match move1 code
+#               5 August 2021
 #               Added mean and variance based record extensions
 #               Object Oriented MOVE.3
 #               21 June 2022
@@ -31,11 +33,11 @@ class MOVE3(object):
         self.merge_data = merge_data
         self.roundInt = roundInt
         #MOVE3 Constant Parameters
-        self.long_record = np.log10(list(self.merge_data.loc[self.merge_data.Record_Type == 'Long Record', 'FLOW']))
-        self.long_years = list(self.merge_data.loc[self.merge_data.Record_Type == 'Long Record', 'WY'].dt.year)
+        self.long_record = np.log10(list(self.merge_data.loc[self.merge_data.recordType == 'Long Record', 'FLOW']))
+        self.long_years = list(self.merge_data.loc[self.merge_data.recordType == 'Long Record', 'WY'].dt.year)
         assert all(x<y for x,y in zip(self.long_years, self.long_years[1:]))
-        self.short_record =np.log10(list(self.merge_data.loc[self.merge_data.Record_Type == 'Short Record', 'FLOW']))
-        self.short_years = list(self.merge_data.loc[self.merge_data.Record_Type == 'Short Record', 'WY'].dt.year)
+        self.short_record =np.log10(list(self.merge_data.loc[self.merge_data.recordType == 'Short Record', 'FLOW']))
+        self.short_years = list(self.merge_data.loc[self.merge_data.recordType == 'Short Record', 'WY'].dt.year)
         assert all(x<y for x,y in zip(self.short_years, self.short_years[1:]))
         self.concurrent_years = [i for i in self.long_years if i in self.short_years]
 
