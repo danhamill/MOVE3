@@ -5,7 +5,7 @@
 
 MOVE1 code reads directly from a HEC-DSS file. 
 
-https://github.com/danhamill/MOVE3/blob/9fc81eb853798551283d006330e2c4f106f29eab/test/test.py#L41-L68
+https://github.com/danhamill/MOVE3/blob/2fce4a71c0758fc276b809f313bb04b2ed53c2ae/move3/test/test.py#L39-L68
 
 Code is tested against an [example](https://www.hec.usace.army.mil/confluence/display/SSPTutorialsGuides/Daily+Flow+Record+Extension+with+MOVE.1) provided by the USACE Hydrologic Engineering Center.
 
@@ -23,7 +23,7 @@ Data are read from a csv format with the following format:
 
 There should be a individual files for short and long records.  The files get merged into a single dataframe within the code. Example input is provided in `data/`
 
-https://github.com/danhamill/MOVE3/blob/3cd8d01549830e56919b131ccbe1f2faadd53d2f/test/test.py#L88-L95
+https://github.com/danhamill/MOVE3/blob/2fce4a71c0758fc276b809f313bb04b2ed53c2ae/move3/test/test.py#L88-L95
 
 This application is designed to perform Bulletin 17C (England et al. 2019) record extension using MOVE.3 and MOVE.1 Methodologies.  
 
@@ -50,10 +50,10 @@ Tested on python 3.9
 Working dashboard for MOVE.3 streamflow record extension.
 
 ```
-streamlit run .\ui_move.py
+streamlit run move3\ui_move.py
 ```
 
 ## To Test Algorthims
 ```
-pytest -v test\test.py
+pytest -v move3\test\test.py
 ```
