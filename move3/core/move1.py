@@ -84,6 +84,8 @@ class MOVE1(object):
         self.s_sq_y1 = None
         self.s_sq_x1 = None
         self.s_sq_x2 = None
+        self._bhat_top = 0.0
+        self._bhat_bottom = 0.0
 
     def comp_variance(self, record):
         if len(record)>1:
@@ -105,6 +107,16 @@ class MOVE1(object):
 
         # Equation 8-6
         self.s_sq_x2 = self.comp_variance(self.additional_flows) 
+
+        for _i, _xi in enumerate(self.con_long_flows):
+            self._bhat_top += (_xi - self.xbar1)*(self.con_short_flows[_i]-self.ybar1)
+            self._bhat_bottom += (_xi-self.xbar1)**2
+        
+        # Equation 8-10
+        self.beta_hat = self._bhat_top/self._bhat_bottom 
+
+        # Equation 8-9
+        self.p_hat = self.beta_hat * (np.sqrt(self.s_sq_x1)/np.sqrt(self.s_sq_y1)) 
 
         if self.roundInt:
             self.short_record_flows = [int(round(10**x)) for x in self.short_record_flows]
