@@ -41,7 +41,7 @@ class TestClass:
         shortPath = '/LITTLE WHITE SALMON RIVER/COOK, WA/FLOW//1DAY/USGS/'
         longPath = '/WIND RIVER/CARSON, WA/FLOW//1DAY/USGS/'
         extendPath = '/LITTLE WHITE SALMON RIVER/COOK, WA/FLOW//1DAY/USGS-EXTENDED_CARSON/'
-        dssFile = r'data\MOVE1_testData.dss'
+        dssFile = r'move3\data\MOVE1_testData.dss'
         
         shortData = self.getDSSdata(
             shortPath, 
