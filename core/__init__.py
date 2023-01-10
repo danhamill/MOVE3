@@ -1,1 +1,1 @@
-__all__ = ["MOVE", "move3"]
+__all__ = ["MOVE", "move3", 'move1']
