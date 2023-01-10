@@ -33,8 +33,9 @@ def main():
     res.calculate()
 
 
-    con_df = pd.DataFrame(data = {'WY': res.concurrent_years, 
-                                            'Short Record': 10**res.con_short_record,
+    con_df = pd.DataFrame(data = {
+        'WY': res.concurrent_years, 
+        'Short Record': 10**res.con_short_record,
                                             'Long Record':  10**res.con_long_record}).set_index('WY')
 
     con_df_log = pd.DataFrame(data = {'WY': res.concurrent_years, 
