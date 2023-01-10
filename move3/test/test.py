@@ -2,8 +2,8 @@
 import pandas as pd
 from pydsstools.heclib.dss import HecDss
 import numpy as np
-from core.move3 import MOVE3
-from core.move1 import MOVE1
+from move3.core.move3 import MOVE3
+from move3.core.move1 import MOVE1
 
 DATA_URLS = {
     'long':'https://raw.githubusercontent.com/danhamill/MOVE3/master/data/Etowah.csv',
@@ -80,6 +80,9 @@ class TestClass:
         #intercept
         assert np.allclose(res.intercept, 2.619, rtol=1e-3 )
 
+        #linear correlation
+        assert np.allclose(res.p_hat, 0.853, rtol=1e-3)
+        
         #extension values
         assert np.allclose(output.FLOW.values, extendData.FLOW.values, rtol=1)
 
