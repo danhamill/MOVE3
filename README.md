@@ -55,5 +55,5 @@ streamlit run .\ui_move.py
 
 ## To Test Algorthims
 ```
-pytest test\test.py
+pytest -v test\test.py
 ```
