@@ -1,7 +1,13 @@
 [![DOI](https://zenodo.org/badge/392819995.svg)](https://zenodo.org/badge/latestdoi/392819995)
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/danhamill/move3/ui_move.py)
 
-# MOVE3
+## MOVE1
+
+MOVE1 code reads directly from a HEC-DSS file.
+
+https://github.com/danhamill/MOVE3/blob/9fc81eb853798551283d006330e2c4f106f29eab/test/test.py#L41-L68
+
+## MOVE3
 Working dashboard for MOVE.3 streamflow record extension.
 
 This application is designed to perform Bulletin 17C (England et al. 2019) record extension using MOVE.3 Methodologies.  There are three possible extension using the MOVE.3:
@@ -13,7 +19,7 @@ This application is designed to perform Bulletin 17C (England et al. 2019) recor
 3. ne (variance extension) - This provides the shortest possible short record extension using the variance of variance.  This type of extension is preferable when uncertainty is primary concern.  Note: This is the preferred approach presented in Bulletin 17C
 
 
-## Assumptions
+### Assumptions
 
 Data are read into the application from a csv format with the following format:
 
@@ -24,9 +30,10 @@ Data are read into the application from a csv format with the following format:
 
 There should be a individual files for short and long records.  The files get merged into a single dataframe within the code. Example input is provided in `data/`
 
-## References
+### References
 - England, John F., Jr., Timothy A. Cohn, Beth A. Faber, Jery R. Stedinger, Wilbert O. Thomas Jr., Andrea G. Veilleux, Julie E. Kiang, and Robert R. Mason, Jr. 2019. “Guidelines for Determining Flood Flow Frequency—Bulletin 17C.” Techniques and Methods. US Geological Survey. https://doi.org/10.3133/tm4b5.
-## Requirements
+
+### Requirements
 
 Tested on python 3.9
 
@@ -36,7 +43,12 @@ Tested on python 3.9
 4. pandas
 5. streamlit
 
-## To run app
+### To run app
 ```
 streamlit run .\ui_move.py
+```
+
+## To Test Algorthims
+```
+pytest test\test.py
 ```
