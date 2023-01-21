@@ -136,7 +136,7 @@ class MOVE1(object):
         self.intercept = self.ybar1
 
         self.extension_short_record = [
-            int(
+            float(
                 round(
                     10**(
                         self.intercept+self.slope*(xi-self.xbar1)

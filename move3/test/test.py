@@ -6,8 +6,8 @@ from move3.core.move3 import MOVE3
 from move3.core.move1 import MOVE1
 
 DATA_URLS = {
-    'long':'https://raw.githubusercontent.com/danhamill/MOVE3/master/data/Etowah.csv',
-    'short': 'https://raw.githubusercontent.com/danhamill/MOVE3/master/data/Suwanee.csv'
+    'long':'https://raw.githubusercontent.com/danhamill/MOVE3/master/move3/data/Etowah.csv',
+    'short':'https://raw.githubusercontent.com/danhamill/MOVE3/master/move3/data/Suwanee.csv'
 }
 
 class TestClass:
