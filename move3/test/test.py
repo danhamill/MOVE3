@@ -1,6 +1,4 @@
-
 import pandas as pd
-from pydsstools.heclib.dss import HecDss
 import numpy as np
 from move3.core.move3 import MOVE3
 from move3.core.move1 import MOVE1
@@ -20,17 +18,6 @@ class TestClass:
             merge.loc[:,'WY'] = pd.to_datetime(merge.WY, format = '%Y')
         return merge
 
-    def getDSSdata(self,pname, dssFile, recordType):
-
-        with HecDss.Open(dssFile) as fid:
-            ts = fid.read_ts(pname, trim_missing=True)
-            times = np.array(ts.pytimes)
-            values = ts.values
-            idx = pd.Index(times, name = 'date')
-            tmp = pd.DataFrame(data = {'FLOW':values}, index=idx)
-            tmp.loc[:,'recordType'] = recordType
-        return tmp.reset_index()
-
     def getCSVdata(self, fpath, recordType):
         tmp = pd.read_csv(fpath, header=None, names = ['WY','FLOW'])
         tmp.loc[:,'recordType'] = recordType
@@ -38,35 +25,11 @@ class TestClass:
 
     def test_move1(self):
 
-        shortPath = '/LITTLE WHITE SALMON RIVER/COOK, WA/FLOW//1DAY/USGS/'
-        longPath = '/WIND RIVER/CARSON, WA/FLOW//1DAY/USGS/'
-        extendPath = '/LITTLE WHITE SALMON RIVER/COOK, WA/FLOW//1DAY/USGS-EXTENDED_CARSON/'
-        dssFile = r'move3\data\MOVE1_testData.dss'
-        
-        shortData = self.getDSSdata(
-            shortPath, 
-            dssFile, 
-            'Short Record'
-        )
-        longData = self.getDSSdata(
-            longPath, 
-            dssFile, 
-            'Long Record'
-        )
-        extendData = self.getDSSdata(
-            extendPath, 
-            dssFile, 
-            'Extended Record'
-        )
-
-        mergeData = self.merge_flow_data(
-            short_data=shortData, 
-            long_data = longData
-        )
+        extendData = pd.read_feather(r"move3\data\move1_extended_data.feather")
+        mergeData = pd.read_feather(r"move3\data\MOVE1_testData.feather")
 
         res = MOVE1(mergeData)
         res.calculate()
-
 
         outIdx = pd.Index(data = res.extension_dates, name ='date')
         output = pd.DataFrame(

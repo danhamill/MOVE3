@@ -1,9 +1,6 @@
 *.pyc
 *.svg
 *.png
-
-MOVE3.egg-info/dependency_links.txt
-MOVE3.egg-info/PKG-INFO
-MOVE3.egg-info/SOURCES.txt
-MOVE3.egg-info/top_level.txt
-MOVE3.egg-info/requires.txt
+.pytest_cache/*
+__pycache__/*
+MOVE3.egg-info/*

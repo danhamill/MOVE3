@@ -1,7 +1,5 @@
-altair==4.2.0
-numpy==1.23.4
-pandas==1.5.1
-pydsstools==2.2
-scikit_learn==1.2.0
-setuptools==65.5.0
-streamlit==1.16.0
+altair<5
+numpy
+pandas
+scikit_learn
+setuptools
