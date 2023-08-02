@@ -3,3 +3,4 @@ numpy
 pandas
 scikit_learn
 setuptools
+pytest
