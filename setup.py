@@ -40,6 +40,7 @@ setup(name='MOVE3',
         "Topic :: Utilities",
       ],
       long_description=long_description,
+      long_description_content_type="text/markdown",
       tests_require=['pytest'],
       version = myVersion
       )
