@@ -2,6 +2,10 @@ from setuptools import setup, find_packages
 from version import __version__ as myVersion
 import os, io
 
+from pathlib import Path
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text(encoding="utf8")
+
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 def read(path, encoding="utf-8"):
@@ -35,7 +39,7 @@ setup(name='MOVE3',
         'Programming Language :: Python :: 3.10',
         "Topic :: Utilities",
       ],
-      long_description=readme,
+      long_description=long_description,
       tests_require=['pytest'],
       version = myVersion
       )
