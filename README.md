@@ -1,4 +1,11 @@
 [![DOI](https://zenodo.org/badge/392819995.svg)](https://zenodo.org/badge/latestdoi/392819995)
+## 
+
+Installation
+
+```python
+pip install MOVE3
+```
 
 ## MOVE1
 
