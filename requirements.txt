@@ -1,6 +1,4 @@
-altair<5
+
 numpy
-pandas
-scikit_learn
-setuptools
-pytest
+
+

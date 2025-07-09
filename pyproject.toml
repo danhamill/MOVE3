@@ -1,0 +1,28 @@
+[project]
+name = "move3"
+version = "0.8.0"
+description = "MOVE1 and MOVE3 record extension utilities"
+authors = [
+    {name = "Daniel Hamill",email = "hamill.daniel@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.10,<3.11"
+dependencies = [
+    "numpy (==1.23.4)"
+]
+
+[tool.poetry]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+setuptools = "^80.9.0"
+
+[tool.poetry.group.example.dependencies]
+altair = "4.2"
+pandas = "^2.3.1"
+scikit-learn = "^1.7.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
